@@ -1,0 +1,12 @@
+django
+djangorestframework
+djangorestframework-simplejwt
+django-cors-headers
+requests
+joblib
+pandas
+scikit-learn
+scipy
+python-dotenv
+gunicorn
+whitenoise

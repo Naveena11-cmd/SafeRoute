@@ -1,0 +1,38 @@
+incident_type,severity,location_label,latitude,longitude,description,reported_at
+Theft,High,CG Road,23.0225,72.5714,Reported theft incident near a busy commercial area.,2025-01-15 18:30:00
+Harassment,High,Navrangpura,23.0365,72.557,Reported harassment incident near a pedestrian route.,2025-02-03 20:15:00
+Lighting,Medium,University Road,23.033,72.546,Poor street lighting reported along the pedestrian pathway.,2025-02-18 19:45:00
+Road-block,Medium,Ashram Road,23.039,72.563,Temporary road blockage affecting pedestrian movement.,2025-03-07 17:20:00
+Construction,Low,Vastrapur,23.0395,72.529,Construction activity causing reduced pedestrian access.,2025-03-22 10:30:00
+Theft,Medium,Satellite,23.03,72.51,Reported theft near a moderately crowded public area.,2025-04-10 21:00:00
+Harassment,High,Paldi,23.012,72.562,Reported harassment incident near a transit and pedestrian zone.,2025-04-28 19:10:00
+Lighting,High,IIM Road,23.0335,72.538,Insufficient lighting reported on a walking route.,2025-05-12 22:00:00
+Road-block,High,SG Highway,23.048,72.516,Road obstruction reported near a major traffic corridor.,2025-05-29 18:45:00
+Construction,Medium,Thaltej,23.05,72.511,Ongoing construction affecting sidewalk availability.,2025-06-14 09:30:00
+Theft,High,Maninagar,22.995,72.604,Reported theft in a busy market and transit area.,2025-07-02 20:30:00
+Harassment,Medium,Bodakdev,23.039,72.508,Reported harassment concern near a public pedestrian area.,2025-07-18 21:15:00
+Lighting,Medium,Prahlad Nagar,23.0125,72.5105,Street lighting issue reported along a local walking route.,2025-08-05 19:30:00
+Road-block,Low,Bopal,23.03,72.465,Temporary obstruction reported on a pedestrian-access road.,2025-08-22 16:45:00
+Construction,High,Gurukul Road,23.0505,72.5485,Major construction activity reported near a walking corridor.,2025-09-09 11:00:00
+Theft,Medium,Ellis Bridge,23.023,72.567,Reported theft near a frequently used pedestrian crossing.,2025-09-25 20:00:00
+Harassment,High,Law Garden,23.027,72.559,Reported harassment incident in a crowded evening area.,2025-10-11 21:30:00
+Lighting,High,Thaltej Road,23.046,72.525,Poor visibility due to inadequate street lighting.,2025-10-27 22:15:00
+Road-block,Medium,Relief Road,23.026,72.586,Temporary road blockage reported in a busy commercial zone.,2025-11-13 18:00:00
+Construction,Medium,Chandkheda,23.11,72.585,Construction work reported near a pedestrian route.,2025-11-29 10:15:00
+Theft,High,Gandhinagar Highway,23.08,72.55,Reported theft near a high-traffic corridor.,2025-12-08 20:45:00
+Harassment,Medium,C G Road,23.023,72.571,Reported harassment concern in a busy commercial area.,2025-12-19 19:00:00
+Lighting,Low,Sola,23.075,72.52,Minor street lighting issue reported on a local road.,2026-01-06 20:30:00
+Road-block,High,Naroda,23.08,72.65,Significant road obstruction affecting pedestrian access.,2026-01-21 17:45:00
+Construction,Low,Gota,23.09,72.54,Small construction zone reported near a sidewalk.,2026-02-14 12:00:00
+Theft,High,Ranip,23.062,72.573,Reported theft near a residential-commercial junction.,2026-03-04 19:20:00
+Harassment,Medium,Nikol,23.0225,72.598,Harassment incident reported near a public transit stop.,2026-03-19 20:40:00
+Lighting,Low,Ghatlodia,23.0525,72.548,Streetlight outage reported along a residential walking path.,2026-04-02 21:10:00
+Road-block,Medium,Vejalpur,23.0325,72.5455,Encroachment reported blocking part of the footpath.,2026-04-17 18:15:00
+Construction,High,Odhav,23.028,72.66,Major roadworks reducing pedestrian access near an industrial zone.,2026-05-01 09:45:00
+Theft,Medium,Vastrapur,23.0395,72.529,Reported theft near a lakefront walking area.,2026-05-16 20:00:00
+Harassment,High,Maninagar,22.995,72.604,Harassment incident reported near a crowded market at night.,2026-05-30 21:50:00
+Lighting,Medium,Satellite,23.03,72.51,Dim street lighting reported along a busy evening route.,2026-06-11 19:35:00
+Road-block,Low,Bopal,23.03,72.465,Minor obstruction reported near a residential sidewalk.,2026-06-25 17:00:00
+Theft,High,Naroda,23.08,72.65,Reported theft near an industrial area bus stop.,2026-07-06 20:20:00
+Construction,Medium,Chandkheda,23.11,72.585,Ongoing construction affecting a pedestrian crossing.,2026-07-14 11:30:00
+Harassment,Medium,Law Garden,23.027,72.559,Reported harassment concern near an evening market crowd.,2026-07-21 21:05:00
