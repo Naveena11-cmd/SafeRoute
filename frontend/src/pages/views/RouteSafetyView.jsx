@@ -263,11 +263,15 @@ export default function RouteSafetyView() {
     // STEP 8: HANDLE BACKEND / ROUTING ERRORS
     // =====================================================
 
-    setStatus(
+    const errorMsg =
       err?.response?.data?.error ||
-      err?.message ||
-      "Unable to find routes. Please try again."
-    );
+      err?.response?.data?.detail ||
+      (err?.message === "Network Error"
+        ? "Server is waking up (takes ~15-20 seconds on first request). Please wait a moment and click 'Find safe routes' again."
+        : err?.message) ||
+      "Unable to find routes. Please try again.";
+
+    setStatus(errorMsg);
   }
 }
   return (
