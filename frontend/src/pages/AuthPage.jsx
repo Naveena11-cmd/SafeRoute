@@ -46,25 +46,38 @@ export default function AuthPage({ mode }) {
       navigate("/app");
 
     } catch (err) {
-      if (mode === "login") {
-        const status = err.response?.status;
-        const detail = err.response?.data?.detail || "";
+      const data = err.response?.data;
+      let apiMsg = "";
 
-        if (status === 400 || status === 401) {
-          setError(
-            "No account found or incorrect email/password. Please check your details or create an account."
-          );
+      if (typeof data === "string") {
+        apiMsg = data;
+      } else if (data && typeof data === "object") {
+        if (Array.isArray(data.email) && data.email.length > 0) apiMsg = data.email[0];
+        else if (Array.isArray(data.password) && data.password.length > 0) apiMsg = data.password[0];
+        else if (Array.isArray(data.detail) && data.detail.length > 0) apiMsg = data.detail[0];
+        else if (Array.isArray(data.non_field_errors) && data.non_field_errors.length > 0) apiMsg = data.non_field_errors[0];
+        else if (typeof data.detail === "string") apiMsg = data.detail;
+        else if (typeof data.error === "string") apiMsg = data.error;
+      }
+
+      if (!apiMsg) {
+        apiMsg = err.message || "";
+      }
+
+      if (mode === "login") {
+        if (apiMsg.toLowerCase().includes("no account found")) {
+          setError("No account found for this email address. Please click 'Create an account' below.");
+        } else if (apiMsg.toLowerCase().includes("credentials") || apiMsg.toLowerCase().includes("password")) {
+          setError("Incorrect password. Please check your password and try again.");
         } else {
-          setError(detail || "Unable to sign in. Please try again.");
+          setError(apiMsg || "No account found or incorrect email/password. Please check your details or create an account.");
         }
       } else {
-        const apiMsg =
-          err.response?.data?.detail ||
-          err.response?.data?.email?.[0] ||
-          err.response?.data?.password?.[0] ||
-          err.message;
-
-        setError(apiMsg || "Something went wrong.");
+        if (apiMsg.toLowerCase().includes("email") && (apiMsg.toLowerCase().includes("exist") || apiMsg.toLowerCase().includes("already"))) {
+          setError("An account with this email already exists! Please click 'Sign in' below to log in.");
+        } else {
+          setError(apiMsg || "Could not create account. Please check your details and try again.");
+        }
       }
     } finally {
       setLoading(false);
