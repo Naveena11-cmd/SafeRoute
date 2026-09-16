@@ -6,8 +6,13 @@ export async function geocode(query, { city = "", countryCode = "" } = {}) {
   if (!query || typeof query !== "string") throw new Error("Invalid location query");
   const cleaned = query.replace(/^📍\s*/, "").trim();
   const lower = cleaned.toLowerCase();
-  if (lower.includes("current location") || lower.includes("my location")) {
-    throw new Error("Could not determine current location. Please enter a place name or click '📍 My location'.");
+  if (
+    lower.startsWith("current") ||
+    lower.includes("locat") ||
+    lower.includes("my loc") ||
+    lower.includes("curr")
+  ) {
+    throw new Error("Please click '📍 My location' or enter a specific address name.");
   }
   const q = city ? `${cleaned}, ${city}` : cleaned;
   const url = new URL("https://nominatim.openstreetmap.org/search");

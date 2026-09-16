@@ -20,7 +20,13 @@ export default function TopNavBar({ onPlan, loading, status }) {
     let src = sourceCoords;
     if (!src && source.trim()) {
       const lower = source.toLowerCase();
-      if (lower.includes("current location") || lower.includes("my location")) {
+      if (
+        lower.startsWith("current") ||
+        lower.includes("locat") ||
+        lower.includes("my loc") ||
+        lower.includes("my position") ||
+        lower.includes("curr")
+      ) {
         setLocateError("");
         setLocating(true);
         try {
