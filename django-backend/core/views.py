@@ -67,34 +67,78 @@ def ensure_ml_loaded():
 def predict_one(lat, lon, hour_of_day=None, osm_overrides=None):
     """
     Scores a single point with the trained regressor/classifier.
+    Thin wrapper around predict_batch() for callers that only have
+    one point (e.g. PredictView with a short ad-hoc list).
     """
+    return predict_batch([(lat, lon, osm_overrides)], hour_of_day)[0]
+
+
+def predict_batch(points, hour_of_day=None):
+    """
+    Scores many points in ONE vectorized call to each model instead of
+    one .predict() call per point.
+
+    Why this matters: sklearn's RandomForest.predict() re-walks every
+    tree for whatever it's given, wrapped in its own joblib.Parallel
+    machinery each call. Calling it 40 separate times per route (once
+    per sampled point, x2 for the regressor+classifier, x up to 3
+    alternate routes) pays that setup cost ~240 times per request for
+    work a single batched call does just as accurately in 2 calls
+    total. On a memory-constrained host (e.g. Render's free 512MB
+    tier) that repeated overhead is what was pushing the gunicorn
+    worker over the limit and triggering an OOM SIGKILL — see the
+    RandomForest predict traceback in ops notes.
+
+    points: list of (lat, lon, osm_overrides_dict_or_None)
+    Returns a list of result dicts in the same order as `points`.
+    """
+    if not points:
+        return []
+
     if not ensure_ml_loaded() or _segment_kdtree is None:
-        score = 75.0
-        if hour_of_day is not None and (hour_of_day < 6 or hour_of_day > 22):
-            score -= 15.0
-        return {
-            "lat": lat, "lon": lon,
-            "safety_score": round(max(0, min(100, score)), 1),
-            "risk_level": "Medium" if score < 70 else "Low",
-            "nearest_segment": "SEG100000",
-            "osm_backed": bool(osm_overrides),
-        }
-    _, nearest_idx = _segment_kdtree.query([lat, lon])
-    row = _reference_df.iloc[nearest_idx].copy()
+        results = []
+        for lat, lon, osm_overrides in points:
+            score = 75.0
+            if hour_of_day is not None and (hour_of_day < 6 or hour_of_day > 22):
+                score -= 15.0
+            results.append({
+                "lat": lat, "lon": lon,
+                "safety_score": round(max(0, min(100, score)), 1),
+                "risk_level": "Medium" if score < 70 else "Low",
+                "nearest_segment": "SEG100000",
+                "osm_backed": bool(osm_overrides),
+            })
+        return results
+
+    coords = [[lat, lon] for lat, lon, _ in points]
+    # Always pass a list-of-pairs (2D input) so cKDTree.query always
+    # returns a proper 1D array of indices, even for a single point —
+    # passing a single bare [lat, lon] instead would return a scalar.
+    _, nearest_idxs = _segment_kdtree.query(coords)
+
+    rows = _reference_df.iloc[nearest_idxs].copy().reset_index(drop=True)
     if hour_of_day is not None:
-        row["hour_of_day"] = hour_of_day
-    for key, value in (osm_overrides or {}).items():
-        row[key] = value
-    X = row[FEATURES].to_frame().T.astype(float)
-    safety_score = float(_reg_model.predict(X)[0])
-    risk_level = str(_clf_model.predict(X)[0])
-    return {
-        "lat": lat, "lon": lon,
-        "safety_score": round(max(0, min(100, safety_score)), 1),
-        "risk_level": risk_level,
-        "nearest_segment": row["segment_id"],
-        "osm_backed": bool(osm_overrides),
-    }
+        rows["hour_of_day"] = hour_of_day
+    for i, (_, _, osm_overrides) in enumerate(points):
+        for key, value in (osm_overrides or {}).items():
+            rows.loc[i, key] = value
+
+    X = rows[FEATURES].astype(float)
+    # Two calls total for the whole batch, not two calls per point.
+    safety_scores = _reg_model.predict(X)
+    risk_levels = _clf_model.predict(X)
+
+    results = []
+    for i, (lat, lon, osm_overrides) in enumerate(points):
+        safety_score = float(safety_scores[i])
+        results.append({
+            "lat": lat, "lon": lon,
+            "safety_score": round(max(0, min(100, safety_score)), 1),
+            "risk_level": str(risk_levels[i]),
+            "nearest_segment": rows.loc[i, "segment_id"],
+            "osm_backed": bool(osm_overrides),
+        })
+    return results
 
 
 def _distance_meters(lat1, lon1, lat2, lon2):
@@ -250,25 +294,26 @@ def score_route_geometry(coordinates, hour_of_day=None):
 
     scored = []
 
-    for lon, lat in sampled:
+    # -------------------------------
+    # ML SAFETY SCORE — one batched call for every sampled point on
+    # this route, instead of one predict() pair per point.
+    # -------------------------------
 
-        # -------------------------------
-        # ML SAFETY SCORE
-        # -------------------------------
+    if ensure_ml_loaded() and sampled:
+        batch_input = [
+            (lat, lon, osm_service.point_osm_features(lat, lon, osm_context))
+            for lon, lat in sampled
+        ]
+        predictions = predict_batch(batch_input, hour_of_day)
+    else:
+        predictions = [None] * len(sampled)
 
-        if ensure_ml_loaded():
-            osm_overrides = osm_service.point_osm_features(lat, lon, osm_context)
-            prediction = predict_one(
-                lat,
-                lon,
-                hour_of_day,
-                osm_overrides=osm_overrides,
-            )
+    for (lon, lat), prediction in zip(sampled, predictions):
 
+        if prediction is not None:
             ml_score = prediction["safety_score"]
             risk_level = prediction["risk_level"]
             osm_backed = prediction["osm_backed"]
-
         else:
             ml_score = 70.0
             risk_level = "Unknown"
@@ -506,7 +551,10 @@ class PredictView(APIView):
 
         points = request.data.get("points", [])
         hour_of_day = request.data.get("hour_of_day", datetime.now().hour)
-        results = [predict_one(p["lat"], p["lon"], hour_of_day) for p in points]
+        results = predict_batch(
+            [(p["lat"], p["lon"], None) for p in points],
+            hour_of_day,
+        )
         return Response({"results": results})
 
 
